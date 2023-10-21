@@ -1,14 +1,13 @@
 
-import { ActiveTabIdsSessionKey } from './constants.js';
+import { reloaderTabs } from './constants.js';
 
 chrome.runtime.onInstalled.addListener(async (reason) => {
-  if (reason !== 'install') {
-    return;
-  }
   console.log("installed");
   let dataToSave={};
-  dataToSave[ActiveTabIdsSessionKey] = [];
-  await chrome.storage.local.set(savedData);
+  dataToSave[reloaderTabs] = {};
+  await chrome.storage.session.set(dataToSave);
+  console.log("init data saved")
+  console.log(dataToSave)
 
   // Create an alarm so we have something to look at in the demo
   await chrome.alarms.create('demo-default-alarm', {
