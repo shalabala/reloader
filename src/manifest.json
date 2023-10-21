@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Reloader pro",
+  "description": "Reload websites and track changes",
+  "version": "1.0",
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
+  "background": {
+    "service_worker": "scripts/background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup/reloader.html",
+    "default_icon": {
+      "16": "images/16_green.png",
+      "32": "images/32_green.png",
+      "48": "images/48_green.png",
+      "128": "images/128_green.png"
+    }
+  }
+}

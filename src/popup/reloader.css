@@ -1,0 +1,12 @@
+body, form{
+    height: auto;
+}
+input{
+    margin: 2px;
+}
+label{
+    margin: 2px;
+}
+.tabActivity{
+    margin-bottom: 16px;
+}
