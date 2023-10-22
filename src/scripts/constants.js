@@ -6,17 +6,17 @@ export const defaultTagToInspect = "h1";
 export const defaultSoundOn = true;
 
 export class ReloaderData {
-    constructor(tabId, isActive,
+    constructor(tabId, title, isActive,
          secondsForReload, tagToInspect, isSoundOn) {
         this.tabId = tabId;
         this.isActive = isActive
         this.secondsForReload = secondsForReload;
         this.tagToInspect = tagToInspect;
         this.isSoundOn = isSoundOn;
-        this.isAlarmOn = false;
         this.lastValueOfInspectedTag;
         this.intervalId = null;
         this.htmlValue = null;
+        this.title = title;
     }
 }
 export class ReloadingSettings{

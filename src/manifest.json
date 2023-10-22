@@ -9,7 +9,8 @@
     "activeTab",
     "offscreen",
     "nativeMessaging",
-    "notifications"
+    "notifications",
+    "tabs"
   ],
   "background": {
     "service_worker": "scripts/background.js",

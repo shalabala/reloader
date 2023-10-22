@@ -22,7 +22,7 @@ let startPageReloading = function (reloaderSettings) {
         target: { tabId: reloaderSettings.tabData.tabId },
         args: [reloaderSettings.tabData.tagToInspect],
         function: getTagHtmls
-      }))[0].result;
+        }))[0].result;
 
       htmlData[reloaderOldHtmls][reloaderSettings.tabData.tabId] = newHtmlTexts;
       await chrome.storage.session.set(htmlData);
@@ -42,29 +42,21 @@ let startPageReloading = function (reloaderSettings) {
       if (alarm) {
         console.log("ALARM!!");
         if (reloaderSettings.tabData.isSoundOn) {
-          // await chrome.scripting.executeScript({
-          //   target: { tabId: reloaderSettings.tabData.tabId },
-          //   args: [beepSound],
-          //   function: (sound) => {
-          // let snd = new Audio(sound);
-          // snd.play();
-          //   }
-          // });
-          //await chrome.tts.speak('Hello, world.');
-          // await chrome.offscreen.createDocument({
-          //   url: chrome.runtime.getURL('./sound.html'),
-          //   reasons: ['AUDIO_PLAYBACK'],
-          //   justification: 'notification',
-          // });
-          await chrome.notifications.create('NOTFICATION_ID', {
+          await chrome.notifications.create(null, {
             type: 'basic',
             silent: false,
-            iconUrl: '../images/red.png',
+            iconUrl: '../images/48_red.png',
             title: 'Reloader site change',
-            message: 'Inspected tag changed',
+            message: 'Inspected tag changed on site ' + reloaderSettings.tabData.title,
             priority: 2
           });
         }
+        await chrome.action.setIcon({path:{
+          "16": "../images/16_red.png",
+          "32": "../images/32_red.png",
+          "48": "../images/48_red.png",
+          "128": "../images/128_red.png"
+        }});
       }
     }
   }, reloaderSettings.tabData.secondsForReload * 1000);
@@ -103,3 +95,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse(intervalId);
   }
 });
+chrome.tabs.onRemoved.addListener(
+  async (tabId)=>{
+    let allTabData = await chrome.storage.session.get([reloaderTabs]);
+    let currentTabData = allTabData[reloaderTabs][tabId];
+    if(currentTabData){
+      if(currentTabData.intervalId){
+        clearInterval(currentTabData.intervalId);
+      }
+      allTabData[reloaderTabs][tabId]=undefined;
+      await chrome.storage.session.set(allTabData);
+    }
+  }
+);
