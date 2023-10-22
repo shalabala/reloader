@@ -1,6 +1,9 @@
 export const reloaderTabs = "reloader_tabs";
+export const reloaderOldHtmls = "reloader_old_htmls";
 export const reloaderChangedMessage = "reloader_changed_message"
-export const defaultReloadTimeInSeconds = 60;
+export const defaultReloadTimeInSeconds = 15;
+export const defaultTagToInspect = "h1";
+export const defaultSoundOn = true;
 
 export class ReloaderData {
     constructor(tabId, isActive,
@@ -13,12 +16,19 @@ export class ReloaderData {
         this.isAlarmOn = false;
         this.lastValueOfInspectedTag;
         this.intervalId = null;
+        this.htmlValue = null;
     }
 }
 export class ReloadingSettings{
-    constructor(tabData, isCreated, intervalId){
+    constructor(tabData, isCreated){
         this.type = reloaderChangedMessage;
         this.tabData=tabData
         this.isCreated=isCreated;
+    }
+}
+export class ReloaderInitiationResult{
+    constructor(intervalId, htmlValue){
+        this.intervalId = intervalId;
+        this.htmlValue = htmlValue;
     }
 }

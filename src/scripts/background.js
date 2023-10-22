@@ -1,34 +1,52 @@
 
-import { reloaderTabs, reloaderChangedMessage } from './constants.js';
+import { reloaderTabs, reloaderChangedMessage, reloaderOldHtmls } from './constants.js';
+let getTagHtmls = function (tag) {
+  let content = document.querySelectorAll(tag);
+  const innerHTMLs = Array.from(content).map((element) => element.innerHTML);
+  return innerHTMLs;
+}
 
 let startPageReloading = function (reloaderSettings) {
   if (reloaderSettings.tabData.intervalId) {
     stopPageReloading(message);
   }
   let intervalId = setInterval(async () => {
-    let elementInspectionNeeded = reloaderSettings.tabData.tagToInspect == null;
-    let oldHtml = null;
-    if (elementInspectionNeeded) {
-      oldHtml = await chrome.scripting.executeScript({
-        target: { tabId: reloaderSettings.tabData.tabId },
-        function: () => {
-          return document.querySelectorAll(reloaderSettings.tabData.tagToInspect);
-        }
-      });
-    }
+
     await chrome.scripting.executeScript({
       target: { tabId: reloaderSettings.tabData.tabId },
       function: () => {
         location.reload();
       }
     });
+    let elementInspectionNeeded = reloaderSettings.tabData.tagToInspect != null;
     if (elementInspectionNeeded) {
-      oldHtml = await chrome.scripting.executeScript({
+      let alarm = false;
+      let htmlData = await chrome.storage.session.get([reloaderOldHtmls]);
+      let oldHtmlTexts = htmlData[reloaderOldHtmls][reloaderSettings.tabData.tabId]
+      let newHtmlTexts = (await chrome.scripting.executeScript({
         target: { tabId: reloaderSettings.tabData.tabId },
-        function: () => {
-          return document.querySelectorAll(reloaderSettings.tabData.tagToInspect);
+        args: [reloaderSettings.tabData.tagToInspect],
+        function: getTagHtmls
+      }))[0].result;
+
+      htmlData[reloaderOldHtmls][reloaderSettings.tabData.tabId] = newHtmlTexts;
+      await chrome.storage.session.set(htmlData);
+      if(!oldHtmlTexts){
+        return;
+      }
+      if (oldHtmlTexts.length !== newHtmlTexts.length) {
+        alarm = true;
+      } else {
+        for (let i = 0; i < oldHtmlTexts.length; i++) {
+          if (oldHtmlTexts[i] !== newHtmlTexts[i]) {
+            alarm = true;
+            break;
+          }
         }
-      });
+      }
+      if (alarm) {
+        console.log("ALARM!!");
+      }
     }
   }, reloaderSettings.tabData.secondsForReload * 1000);
 
@@ -43,11 +61,14 @@ let stopPageReloading = function (reloaderSettings) {
 
 chrome.runtime.onInstalled.addListener(async (reason) => {
   console.log("installed");
-  let dataToSave = {};
-  dataToSave[reloaderTabs] = {};
-  await chrome.storage.session.set(dataToSave);
+  let reloaderTabsData = {};
+  reloaderTabsData[reloaderTabs] = {};
+  let reloaderOldHtmlData = {};
+  reloaderOldHtmlData[reloaderOldHtmls] = {};
+  await chrome.storage.session.set(reloaderTabsData);
+  await chrome.storage.session.set(reloaderOldHtmlData);
   console.log("init data saved")
-  console.log(dataToSave)
+  console.log(reloaderTabsData)
 
 });
 
