@@ -5,7 +5,9 @@
   "version": "1.0",
   "permissions": [
     "storage",
-    "alarms"
+    "alarms","scripting", "activeTab",
+
+    "nativeMessaging"
   ],
   "background": {
     "service_worker": "scripts/background.js",
