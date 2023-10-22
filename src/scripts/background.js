@@ -12,12 +12,7 @@ let startPageReloading = function (reloaderSettings) {
   }
   let intervalId = setInterval(async () => {
 
-    await chrome.scripting.executeScript({
-      target: { tabId: reloaderSettings.tabData.tabId },
-      function: () => {
-        location.reload();
-      }
-    });
+    await chrome.tabs.reload(reloaderSettings.tabData.tabId);
     let elementInspectionNeeded = reloaderSettings.tabData.tagToInspect != null;
     if (elementInspectionNeeded) {
       let alarm = false;
@@ -31,7 +26,7 @@ let startPageReloading = function (reloaderSettings) {
 
       htmlData[reloaderOldHtmls][reloaderSettings.tabData.tabId] = newHtmlTexts;
       await chrome.storage.session.set(htmlData);
-      if(!oldHtmlTexts){
+      if (!oldHtmlTexts) {
         return;
       }
       if (oldHtmlTexts.length !== newHtmlTexts.length) {
@@ -46,6 +41,30 @@ let startPageReloading = function (reloaderSettings) {
       }
       if (alarm) {
         console.log("ALARM!!");
+        if (reloaderSettings.tabData.isSoundOn) {
+          // await chrome.scripting.executeScript({
+          //   target: { tabId: reloaderSettings.tabData.tabId },
+          //   args: [beepSound],
+          //   function: (sound) => {
+          // let snd = new Audio(sound);
+          // snd.play();
+          //   }
+          // });
+          //await chrome.tts.speak('Hello, world.');
+          // await chrome.offscreen.createDocument({
+          //   url: chrome.runtime.getURL('./sound.html'),
+          //   reasons: ['AUDIO_PLAYBACK'],
+          //   justification: 'notification',
+          // });
+          await chrome.notifications.create('NOTFICATION_ID', {
+            type: 'basic',
+            silent: false,
+            iconUrl: '../images/red.png',
+            title: 'Reloader site change',
+            message: 'Inspected tag changed',
+            priority: 2
+          });
+        }
       }
     }
   }, reloaderSettings.tabData.secondsForReload * 1000);

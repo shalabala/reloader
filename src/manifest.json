@@ -5,9 +5,11 @@
   "version": "1.0",
   "permissions": [
     "storage",
-    "alarms","scripting", "activeTab",
-
-    "nativeMessaging"
+    "scripting",
+    "activeTab",
+    "offscreen",
+    "nativeMessaging",
+    "notifications"
   ],
   "background": {
     "service_worker": "scripts/background.js",
