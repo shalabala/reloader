@@ -1,0 +1,4 @@
+- we need to find a better solution to wait until the page has loaded, than delaying it with 2000 ms in background.js
+- notification could open the browser directly
+- if we are looking at a number, it could go up and down, maybe we are only interested if it has gone up
+- design needs to be perfected

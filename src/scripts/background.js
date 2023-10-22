@@ -5,14 +5,19 @@ let getTagHtmls = function (tag) {
   const innerHTMLs = Array.from(content).map((element) => element.innerHTML);
   return innerHTMLs;
 }
+function delay(milliseconds){
+  return new Promise(resolve => {
+      setTimeout(resolve, milliseconds);
+  });
+}
 
 let startPageReloading = function (reloaderSettings) {
   if (reloaderSettings.tabData.intervalId) {
     stopPageReloading(message);
   }
   let intervalId = setInterval(async () => {
-
     await chrome.tabs.reload(reloaderSettings.tabData.tabId);
+    await delay(2000);
     let elementInspectionNeeded = reloaderSettings.tabData.tagToInspect != null;
     if (elementInspectionNeeded) {
       let alarm = false;
