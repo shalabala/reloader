@@ -12,12 +12,13 @@ export class ReloaderData {
         this.isSoundOn = isSoundOn;
         this.isAlarmOn = false;
         this.lastValueOfInspectedTag;
+        this.intervalId = null;
     }
 }
 export class ReloadingSettings{
-    constructor(tabId, isCreated){
+    constructor(tabData, isCreated, intervalId){
         this.type = reloaderChangedMessage;
-        this.tabId = tabId;
+        this.tabData=tabData
         this.isCreated=isCreated;
     }
 }

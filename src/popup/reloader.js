@@ -1,4 +1,4 @@
-import { reloaderTabs, defaultReloadTimeInSeconds, ReloaderData } from '../scripts/constants.js'
+import { reloaderTabs, defaultReloadTimeInSeconds, ReloaderData, ReloadingSettings } from '../scripts/constants.js'
 
 document.addEventListener('DOMContentLoaded', async function () {
     console.log("visible" + new Date().getTime());
@@ -41,45 +41,31 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (currentTabData.isAlarmOn) {
         //todo change icon back
     }
-    let intervalId = null;
-    let startPageReloading = function () {
-        intervalId = setInterval(async () =>
-            await chrome.scripting.executeScript({
-                target: { tabId: currentTab.id },
-                function: () => {
-                    location.reload();
-                }
-            }), currentTabData.secondsForReload * 1000);
-
-        console.log("reload period created", currentTab.id);
+    let startPageReloading = async function () {
+        currentTabData.intervalId = await chrome.runtime.sendMessage(new ReloadingSettings(currentTabData, true,  currentTabData.intervalId))
     };
-    let stopPageReloading = function () {
-        if (intervalId) {
-            clearInterval(intervalId);
-            console.log("reload period cleared", currentTab.id);
-        }
+    let stopPageReloading = async function () {
+        currentTabData.intervalId = await chrome.runtime.sendMessage(new ReloadingSettings(currentTabData, false,  currentTabData.intervalId))
     };
     tabActivityCheckbox.addEventListener('change', async function () {
         console.log(`tab activity value changed: ${tabActivityCheckbox.checked}`);
         currentTabData.isActive = tabActivityCheckbox.checked;
-        await chrome.storage.session.set(allTabData);
 
         if (currentTabData.isActive) {
-            startPageReloading();
-
-
+            await startPageReloading();
         } else {
-            stopPageReloading();
+            await stopPageReloading();
         }
+        await chrome.storage.session.set(allTabData);
     });
     secondsForReloadField.addEventListener('input', async function () {
         console.log(`seconds for reload value changed: ${secondsForReloadField.value}`);
         currentTabData.secondsForReload = secondsForReloadField.value;
-        await chrome.storage.session.set(allTabData);
-        if (intervalId) {
-            stopPageReloading();
-            startPageReloading();
+        if ( currentTabData.intervalId) {
+            await stopPageReloading();
+            await startPageReloading();
         }
+        await chrome.storage.session.set(allTabData);
     });
     tagToInspectField.addEventListener('input', async function () {
         console.log(`tag to inspect value changed: ${tagToInspectField.value}`);
