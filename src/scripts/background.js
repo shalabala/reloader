@@ -10,19 +10,21 @@ let getTagHtmls = function (tag) {
   const innerHTMLs = Array.from(content).map((element) => element.innerHTML);
   return innerHTMLs;
 }
+
 function delay(milliseconds) {
   return new Promise(resolve => {
     setTimeout(resolve, milliseconds);
   });
 }
+
 async function pollTabUntilLoaded(tabId) {
   let tab;
   do {
     tab = await chrome.tabs.get(tabId);
     await delay(tabLoadPollPeriodInMilisecs);
   } while (tab.status !== "complete");
-
 }
+
 async function getHtmlFromPage(tabId, tag) {
   let tags = await chrome.scripting.executeScript({
     target: { tabId },
@@ -31,6 +33,7 @@ async function getHtmlFromPage(tabId, tag) {
   });
   return tags[0].result;
 }
+
 let startPageReloading = function (reloaderSettings) {
   if (reloaderSettings.tabData.intervalId) {
     stopPageReloading(message);
@@ -89,12 +92,12 @@ let stopPageReloading = function (reloaderSettings) {
   console.log("reload period cleared", reloaderSettings.tabData.tabId);
 };
 
-
 chrome.runtime.onInstalled.addListener(async (reason) => {
   console.log("installed");
   createEmptyDatasetForSync(reloaderTabDefaults);
   console.log("init data saved")
 });
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // 2. A page requested user data, respond with a copy of `user`
   if (message.type === reloaderChangedMessage) {
@@ -107,6 +110,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse(intervalId);
   }
 });
+
 chrome.tabs.onRemoved.addListener(
   async (tabId) => {
     let allTabData = await chrome.storage.session.get([reloaderTabs]);

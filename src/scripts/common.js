@@ -12,10 +12,12 @@ export function getBaseUrl(url) {
     var host = pathArray[2];
     return protocol + '//' + host;
 }
+
 export function toReloaderData(preconfig, tabId, title, isActive) {
     return new ReloaderData(tabId, title, isActive, preconfig.secondsForReload,
         preconfig.tagToInspect, preconfig.isSoundOn);
 }
+
 export class ReloaderPreconfiguration {
     constructor(secondsForReload, tagToInspect, isSoundOn) {
         this.secondsForReload = secondsForReload;
@@ -23,19 +25,23 @@ export class ReloaderPreconfiguration {
         this.isSoundOn = isSoundOn;
     }
 }
+
 export async function createEmptyDatasetForSession(name) {
     let dataset = {};
     dataset[name] = {};
     await chrome.storage.session.set(dataset);
 }
+
 export async function createEmptyDatasetForSync(name) {
     let dataset = {};
     dataset[name] = {};
     await chrome.storage.sync.set(dataset);
 }
+
 export function toPreconfig(data) {
     return new ReloaderPreconfiguration(data.secondsForReload, data.tagToInspect, data.isSoundOn);
 }
+
 export class ReloaderData {
     constructor(tabId, title, isActive,
         secondsForReload, tagToInspect, isSoundOn) {
@@ -49,9 +55,8 @@ export class ReloaderData {
         this.htmlValue = null;
         this.title = title;
     }
-
-
 }
+
 export class ReloadingSettings {
     constructor(tabData, isCreated) {
         this.type = reloaderChangedMessage;
@@ -59,6 +64,7 @@ export class ReloadingSettings {
         this.isCreated = isCreated;
     }
 }
+
 export const siteDefaults = {
     'default': new ReloaderPreconfiguration(defaultReloadTimeInSeconds, "h1", defaultSoundOn),
     'https://www.wg-gesucht.de': new ReloaderPreconfiguration(defaultReloadTimeInSeconds, ".headline.headline-default", defaultSoundOn),
