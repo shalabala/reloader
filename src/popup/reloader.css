@@ -1,12 +1,21 @@
-body, form{
-    height: auto;
+html,
+body,
+form {
+    height: 180px;
 }
-input{
-    margin: 2px;
+
+input {
+    margin-bottom: 10px;
 }
-label{
-    margin: 2px;
+
+label {
+    margin-bottom: 5px;
 }
-.tabActivity{
+
+.tabActivity {
     margin-bottom: 16px;
+}
+
+input[type="checkbox"] {
+    float: right;
 }
