@@ -1,39 +1,42 @@
 
-import { reloaderTabs, reloaderChangedMessage, reloaderOldHtmls } from './constants.js';
+import {
+  reloaderTabs, reloaderChangedMessage, reloaderTabDefaults,
+  createEmptyDatasetForSync
+} from './common.js';
+
 let getTagHtmls = function (tag) {
   let content = document.querySelectorAll(tag);
   const innerHTMLs = Array.from(content).map((element) => element.innerHTML);
   return innerHTMLs;
 }
-function delay(milliseconds){
+function delay(milliseconds) {
   return new Promise(resolve => {
-      setTimeout(resolve, milliseconds);
+    setTimeout(resolve, milliseconds);
   });
 }
-
+async function getHtmlFromPage(tabId, tag) {
+  let tags = await chrome.scripting.executeScript({
+    target: { tabId },
+    args: [tag],
+    function: getTagHtmls
+  });
+  return tags[0].result;
+}
 let startPageReloading = function (reloaderSettings) {
   if (reloaderSettings.tabData.intervalId) {
     stopPageReloading(message);
   }
   let intervalId = setInterval(async () => {
-    await chrome.tabs.reload(reloaderSettings.tabData.tabId);
-    await delay(2000);
+    let oldHtmlTexts = null;
     let elementInspectionNeeded = reloaderSettings.tabData.tagToInspect != null;
     if (elementInspectionNeeded) {
+      oldHtmlTexts = await getHtmlFromPage(reloaderSettings.tabData.tabId, reloaderSettings.tabData.tagToInspect);
+    }
+    await chrome.tabs.reload(reloaderSettings.tabData.tabId);
+    await delay(2000);
+    if (elementInspectionNeeded) {
       let alarm = false;
-      let htmlData = await chrome.storage.session.get([reloaderOldHtmls]);
-      let oldHtmlTexts = htmlData[reloaderOldHtmls][reloaderSettings.tabData.tabId]
-      let newHtmlTexts = (await chrome.scripting.executeScript({
-        target: { tabId: reloaderSettings.tabData.tabId },
-        args: [reloaderSettings.tabData.tagToInspect],
-        function: getTagHtmls
-        }))[0].result;
-
-      htmlData[reloaderOldHtmls][reloaderSettings.tabData.tabId] = newHtmlTexts;
-      await chrome.storage.session.set(htmlData);
-      if (!oldHtmlTexts) {
-        return;
-      }
+      let newHtmlTexts = await getHtmlFromPage(reloaderSettings.tabData.tabId, reloaderSettings.tabData.tagToInspect);
       if (oldHtmlTexts.length !== newHtmlTexts.length) {
         alarm = true;
       } else {
@@ -56,12 +59,14 @@ let startPageReloading = function (reloaderSettings) {
             priority: 2
           });
         }
-        await chrome.action.setIcon({path:{
-          "16": "../images/16_red.png",
-          "32": "../images/32_red.png",
-          "48": "../images/48_red.png",
-          "128": "../images/128_red.png"
-        }});
+        await chrome.action.setIcon({
+          path: {
+            "16": "../images/16_red.png",
+            "32": "../images/32_red.png",
+            "48": "../images/48_red.png",
+            "128": "../images/128_red.png"
+          }
+        });
       }
     }
   }, reloaderSettings.tabData.secondsForReload * 1000);
@@ -75,19 +80,12 @@ let stopPageReloading = function (reloaderSettings) {
   console.log("reload period cleared", reloaderSettings.tabData.tabId);
 };
 
+
 chrome.runtime.onInstalled.addListener(async (reason) => {
   console.log("installed");
-  let reloaderTabsData = {};
-  reloaderTabsData[reloaderTabs] = {};
-  let reloaderOldHtmlData = {};
-  reloaderOldHtmlData[reloaderOldHtmls] = {};
-  await chrome.storage.session.set(reloaderTabsData);
-  await chrome.storage.session.set(reloaderOldHtmlData);
+  createEmptyDatasetForSync(reloaderTabDefaults);
   console.log("init data saved")
-  console.log(reloaderTabsData)
-
 });
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // 2. A page requested user data, respond with a copy of `user`
   if (message.type === reloaderChangedMessage) {
@@ -101,14 +99,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 chrome.tabs.onRemoved.addListener(
-  async (tabId)=>{
+  async (tabId) => {
     let allTabData = await chrome.storage.session.get([reloaderTabs]);
     let currentTabData = allTabData[reloaderTabs][tabId];
-    if(currentTabData){
-      if(currentTabData.intervalId){
+    if (currentTabData) {
+      if (currentTabData.intervalId) {
         clearInterval(currentTabData.intervalId);
       }
-      allTabData[reloaderTabs][tabId]=undefined;
+      allTabData[reloaderTabs][tabId] = undefined;
       await chrome.storage.session.set(allTabData);
     }
   }
