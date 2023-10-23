@@ -1,7 +1,8 @@
 
 import {
   reloaderTabs, reloaderChangedMessage, reloaderTabDefaults,
-  createEmptyDatasetForSync
+  createEmptyDatasetForSync,
+  tabLoadPollPeriodInMilisecs
 } from './common.js';
 
 let getTagHtmls = function (tag) {
@@ -13,6 +14,14 @@ function delay(milliseconds) {
   return new Promise(resolve => {
     setTimeout(resolve, milliseconds);
   });
+}
+async function pollTabUntilLoaded(tabId) {
+  let tab;
+  do {
+    tab = await chrome.tabs.get(tabId);
+    await delay(tabLoadPollPeriodInMilisecs);
+  } while (tab.status !== "complete");
+
 }
 async function getHtmlFromPage(tabId, tag) {
   let tags = await chrome.scripting.executeScript({
@@ -33,7 +42,7 @@ let startPageReloading = function (reloaderSettings) {
       oldHtmlTexts = await getHtmlFromPage(reloaderSettings.tabData.tabId, reloaderSettings.tabData.tagToInspect);
     }
     await chrome.tabs.reload(reloaderSettings.tabData.tabId);
-    await delay(2000);
+    await pollTabUntilLoaded(reloaderSettings.tabData.tabId);
     if (elementInspectionNeeded) {
       let alarm = false;
       let newHtmlTexts = await getHtmlFromPage(reloaderSettings.tabData.tabId, reloaderSettings.tabData.tagToInspect);

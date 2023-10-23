@@ -4,6 +4,7 @@ export const reloaderChangedMessage = "reloader_changed_message"
 export const defaultReloadTimeInSeconds = 15;
 export const defaultTagToInspect = "h1";
 export const defaultSoundOn = true;
+export const tabLoadPollPeriodInMilisecs = 100;
 
 export function getBaseUrl(url) {
     var pathArray = url.split('/');
