@@ -11,9 +11,11 @@ async function getAndSeedSessionDataIfNeeded(name) {
         await createEmptyDatasetForSession(name);
         return await chrome.storage.session.get([name]);
     }
+    
     console.log("sesson seed not needed, already found: ", data);
     return data;
 }
+
 document.addEventListener('DOMContentLoaded', async function () {
     console.log("visible" + new Date().getTime());
 
@@ -33,9 +35,11 @@ document.addEventListener('DOMContentLoaded', async function () {
             console.log("no current tab default, reading from fallback", currentTabDefault)
 
         }
+
         allDefaults[reloaderTabDefaults][currentBaseUrl] = currentTabDefault;
         await chrome.storage.sync.set(allDefaults);
     }
+
     if (!currentTabData) {
         currentTabData = toReloaderData(currentTabDefault,currentTab.id,
             currentTab.title,
@@ -52,6 +56,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         } else if (currentTabData.intervalId) {
             await stopPageReloading();
         }
+
         allDefaults[reloaderTabDefaults][currentBaseUrl] = toPreconfig(currentTabData);
         await chrome.storage.session.set(allTabData);
         await chrome.storage.sync.set(allDefaults);
@@ -78,23 +83,28 @@ document.addEventListener('DOMContentLoaded', async function () {
             "128": "../images/128_green.png"
         }
     });
+
     let startPageReloading = async function () {
         currentTabData.intervalId = await chrome.runtime.sendMessage(new ReloadingSettings(currentTabData, true, currentTabData.intervalId))
     };
+
     let stopPageReloading = async function () {
         currentTabData.intervalId = await chrome.runtime.sendMessage(new ReloadingSettings(currentTabData, false, currentTabData.intervalId))
     };
+
     tabActivityCheckbox.addEventListener('change', async function () {
         console.log(`tab activity value changed: ${tabActivityCheckbox.checked}`);
         currentTabData.isActive = tabActivityCheckbox.checked;
         await saveAndReload();
     });
+
     secondsForReloadField.addEventListener('input', async function () {
         console.log(`seconds for reload value changed: ${secondsForReloadField.value}`);
         currentTabData.secondsForReload = secondsForReloadField.value;
         await saveAndReload();
 
     });
+
     tagToInspectField.addEventListener('input', async function () {
         console.log(`tag to inspect value changed: ${tagToInspectField.value}`);
         currentTabData.tagToInspect = tagToInspectField.value;
@@ -102,11 +112,11 @@ document.addEventListener('DOMContentLoaded', async function () {
         await saveAndReload();
 
     });
+
     isSoundOnCheckbox.addEventListener('change', async function () {
         console.log(`is sound on value changed: ${isSoundOnCheckbox.value}`);
         currentTabData.isSoundOn = isSoundOnCheckbox.checked;
         await chrome.storage.session.set(allTabData);
         await saveAndReload();
-
     });
 });

@@ -38,12 +38,14 @@ let startPageReloading = function (reloaderSettings) {
   if (reloaderSettings.tabData.intervalId) {
     stopPageReloading(message);
   }
+  
   let intervalId = setInterval(async () => {
     let oldHtmlTexts = null;
     let elementInspectionNeeded = reloaderSettings.tabData.tagToInspect != null;
     if (elementInspectionNeeded) {
       oldHtmlTexts = await getHtmlFromPage(reloaderSettings.tabData.tabId, reloaderSettings.tabData.tagToInspect);
     }
+
     await chrome.tabs.reload(reloaderSettings.tabData.tabId);
     await pollTabUntilLoaded(reloaderSettings.tabData.tabId);
     if (elementInspectionNeeded) {
@@ -59,6 +61,7 @@ let startPageReloading = function (reloaderSettings) {
           }
         }
       }
+
       if (alarm) {
         console.log("ALARM!!");
         if (reloaderSettings.tabData.isSoundOn) {
@@ -71,6 +74,7 @@ let startPageReloading = function (reloaderSettings) {
             priority: 2
           });
         }
+
         await chrome.action.setIcon({
           path: {
             "16": "../images/16_red.png",
@@ -107,6 +111,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } else {
       stopPageReloading(message);
     }
+
     sendResponse(intervalId);
   }
 });
@@ -119,6 +124,7 @@ chrome.tabs.onRemoved.addListener(
       if (currentTabData.intervalId) {
         clearInterval(currentTabData.intervalId);
       }
+
       allTabData[reloaderTabs][tabId] = undefined;
       await chrome.storage.session.set(allTabData);
     }
